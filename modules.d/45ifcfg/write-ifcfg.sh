@@ -51,8 +51,8 @@ for netif in $IFACES ; do
 	    [ -f /tmp/dhclient.$netif.dhcpopts ] && cp /tmp/dhclient.$netif.dhcpopts /tmp/net.$netif.dhcpopts
         else
             echo "BOOTPROTO=none"
-        # If we've booted with static ip= lines, the override file is there
-            . /tmp/net.$netif.override
+            # If we've booted with static ip= lines, the override file is there
+            [ -e /tmp/net.$netif.override ] && . /tmp/net.$netif.override
             echo "IPADDR=$ip"
             echo "NETMASK=$mask"
             [ -n "$gw" ] && echo "GATEWAY=$gw"
