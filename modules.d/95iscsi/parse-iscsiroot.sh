@@ -69,7 +69,9 @@ fi
 # If it's not iscsi we don't continue
 [ "${netroot%%:*}" = "iscsi" ] || return
 
-parse_iscsi_root "$netroot" || return
+if [ -z "$iscsi_firmware" ] ; then
+    parse_iscsi_root "$netroot" || return
+fi
 
 # ISCSI actually supported?
 if ! [ -e /sys/module/iscsi_tcp ]; then
