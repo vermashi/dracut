@@ -155,7 +155,7 @@ handle_netroot()
 	${iscsi_password+-w $iscsi_password} \
 	${iscsi_in_username+-U $iscsi_in_username} \
 	${iscsi_in_password+-W $iscsi_in_password} \
-	${iscsi_iface_name+--param iface.iscsiname=$iscsi_iface_name} \
+	${iscsi_iface_name+--param iface.iscsi_ifacename=$iscsi_iface_name} \
 	${iscsi_netdev_name+--param iface.net_ifacename=$iscsi_netdev_name} \
 	${iscsi_param} \
 	|| :
