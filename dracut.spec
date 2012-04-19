@@ -61,6 +61,7 @@ BuildArch: noarch
 %endif
 
 BuildRequires: docbook-style-xsl docbook-dtds libxslt
+BuildRequires: dash bash git
 
 %description
 dracut is a new, event-driven initramfs infrastructure based around udev.
@@ -145,6 +146,17 @@ This package contains tools to assemble the local initrd and host configuration.
 
 %prep
 %setup -q -n %{name}-%{version}
+
+%if %{defined PATCH1}
+git init
+git config user.email "dracut-maint@redhat.com"
+git config user.name "Fedora dracut team"
+git add .
+git commit -a -q -m "%{version} baseline."
+
+# Apply all the patches.
+git am -p1 %{patches}
+%endif
 
 chmod 0755 modules.d/*/check
 # make rpmlint happy
