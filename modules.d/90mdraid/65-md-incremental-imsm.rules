@@ -47,10 +47,12 @@ GOTO="end_raidstart"
 
 LABEL="do_raidstart"
 
-# check if array is not inactive anymore
-TEST=="md/array_state", ATTR{md/array_state}!="|inactive", GOTO="end_raidstart"
+RUN+="/bin/ln -sf /sbin/md_finished.sh /initqueue-finished/md_finished.sh"
 
-RUN+="/bin/sh -c 'ln -s /sbin/md_finished.sh /initqueue-finished/md_finished.sh;/sbin/initqueue --timeout --onetime --name 51-mdraid_start --unique /sbin/mdraid_start'"
+# check if array is not inactive anymore
+TEST=="md/array_state", ATTR{md/array_state}=="clean", ENV{MD_UUID}=="?*", GOTO="end_raidstart"
+
+RUN+="/sbin/initqueue --timeout --onetime --name 51-mdraid_start --unique /sbin/mdraid_start"
 
 LABEL="end_raidstart"
 
@@ -68,6 +70,10 @@ GOTO="end_container"
 
 LABEL="do_container"
 
-RUN+="/bin/sh -c 'ln -s /sbin/md_finished.sh /initqueue-finished/md_finished.sh;/sbin/initqueue --timeout --onetime --name 50-mdcontainer_start --unique --name mdcontainer_start-%k /sbin/mdcontainer_start $env{DEVNAME}'"
+RUN+="/bin/sh -c 'ln -s /sbin/md_finished.sh /initqueue-finished/md_finished.sh"
+
+TEST=="md/array_state", ATTR{md/array_state}=="clean", ENV{MD_UUID}=="?*", GOTO="end_container"
+
+RUN+="/sbin/initqueue --timeout --onetime --name 50-mdcontainer_start --unique --name mdcontainer_start-%k /sbin/mdcontainer_start $env{DEVNAME}"
 
 LABEL="end_container"
