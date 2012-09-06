@@ -50,8 +50,8 @@ Creates initial ramdisk images for preloading modules
                         firmwares, separated by :
   --kernel-only         Only install kernel drivers and firmware files
   --no-kernel           Do not install kernel drivers and firmware files
-  --strip               Strip binaries in the initramfs
-  --nostrip             Do not strip binaries in the initramfs (default)
+  --strip               Strip binaries in the initramfs (default)
+  --nostrip             Do not strip binaries in the initramfs
   --mdadmconf           Include local /etc/mdadm.conf
   --nomdadmconf         Do not include local /etc/mdadm.conf
   --lvmconf             Include local /etc/lvm/lvm.conf
@@ -161,7 +161,7 @@ fi
 [[ $lvmconf_l ]] && lvmconf=$lvmconf_l
 [[ $dracutbasedir ]] || dracutbasedir=/usr/share/dracut
 [[ $fw_dir ]] || fw_dir=/lib/firmware
-[[ $do_strip ]] || do_strip=no
+[[ $do_strip ]] || do_strip=yes
 # eliminate IFS hackery when messing with fw_dir
 fw_dir=${fw_dir//:/ }
 
@@ -309,18 +309,14 @@ fi
 
 if [[ $do_strip = yes ]] ; then
     for f in $(find "$initdir" -type f \( -perm -0100 -or -perm -0010 -or -perm -0001 -or -path '*/lib/modules/*.ko' \) ); do
-	dinfo "Stripping $f"
-	strip -g "$f" 2>/dev/null|| :
-        #
-        # FIXME: only strip -g for now
-        #
-	#strip -g --strip-unneeded "$f" || :
-	#note="-R .note"
-	#if objdump -h $f | grep '^[ 	]*[0-9]*[ 	]*.note[ 	]' -A 1 | \
-	#    grep -q ALLOC; then
-	#    note=
-	#fi
-	#strip -R .comment $note "$f" || :
+        # do not strip files with a .hmac file,
+        # because that would alter the checksum
+        if ! [[ -f "${f%/*}/.${f##*/}.hmac" ]]; then
+	    dinfo "Stripping '$f'"
+	    strip -g "$f" 2>/dev/null|| :
+        else
+            dinfo "Not stripping '$f', because it has a hmac checksum file."
+        fi
     done
 fi
 
