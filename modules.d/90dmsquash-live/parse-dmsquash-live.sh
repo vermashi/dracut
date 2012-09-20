@@ -39,5 +39,21 @@ case "$liveroot" in
 esac
 info "root was $root, liveroot is now $liveroot"
 
-# make sure that init doesn't complain
-[ -z "$root" ] && root="live"
+if [ "${root##live:/dev/}:" != "$root" ]; then
+    [ -d /dev/.udev/rules.d ] || mkdir -p /dev/.udev/rules.d
+    {
+        printf 'KERNEL=="%s", SYMLINK+="live"\n' \
+            ${root#live:/dev/}
+        printf 'SYMLINK=="%s", SYMLINK+="live"\n' \
+            ${root#live:/dev/}
+    } >> /dev/.udev/rules.d/99-live-mount.rules
+    {
+        printf 'KERNEL=="%s", RUN+="/sbin/initqueue --settled --onetime --unique /sbin/dmsquash-live-root $env{DEVNAME}"\n' \
+            ${root#live:/dev/}
+        printf 'SYMLINK=="%s", RUN+="/sbin/initqueue --settled --onetime --unique /sbin/dmsquash-live-root $env{DEVNAME}"\n' \
+            ${root#live:/dev/}
+    } >> /etc/udev/rules.d/98-dracut-20-live-squash.rules
+    echo '[ -e /dev/live ]' > /initqueue-finished/dmsquash.sh
+    root=/dev/mapper/live-rw
+    unset rootok
+fi

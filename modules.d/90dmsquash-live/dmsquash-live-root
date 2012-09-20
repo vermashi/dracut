@@ -174,7 +174,7 @@ if [ -n "$ROOTFLAGS" ]; then
     ROOTFLAGS="-o $ROOTFLAGS"
 fi
 
-ln -s /dev/mapper/live-rw /dev/root
+ln -fs /dev/mapper/live-rw /dev/root
 printf '/bin/mount %s /dev/mapper/live-rw %s\n' "$ROOTFLAGS" "$NEWROOT" > /mount/01-$$-live.sh
 
 exit 0
