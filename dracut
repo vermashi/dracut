@@ -330,11 +330,11 @@ if strstr "$modules_loaded" " fips " && command -v prelink >/dev/null; then
 fi
 
 type pigz &>/dev/null && gzip=pigz || gzip=gzip
-( cd "$initdir"; find . |cpio -R 0:0 -H newc -o --quiet |$gzip -9 > "$outfile"; ) 
-if [ $? -ne 0 ]; then
+if ! ( umask 077; cd "$initdir"; find . |cpio -R 0:0 -H newc -o --quiet| \
+    $gzip -9 > "$outfile"; ); then
     derror "dracut: creation of $outfile failed"
     exit 1
-fi 
+fi
 dinfo "Wrote $outfile"
 dinfo $(ls -l "$outfile")
 
