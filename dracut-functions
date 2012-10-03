@@ -49,6 +49,92 @@ derror() {
     [[ -w $dracutlogfile ]] && echo $(date) "Err:" $@ >>"$dracutlogfile"
 }
 
+
+
+# normalize_path <path>
+# Prints the normalized path, where it removes any duplicated
+# and trailing slashes.
+# Example:
+# $ normalize_path ///test/test//
+# /test/test
+normalize_path() {
+    shopt -q -s extglob
+    set -- "${1//+(\/)//}"
+    shopt -q -u extglob
+    echo "${1%/}"
+}
+
+# convert_abs_rel <from> <to>
+# Prints the relative path, when creating a symlink to <to> from <from>.
+# Example:
+# $ convert_abs_rel /usr/bin/test /bin/test-2
+# ../../bin/test-2
+# $ ln -s $(convert_abs_rel /usr/bin/test /bin/test-2) /usr/bin/test
+convert_abs_rel() {
+    local __current __absolute __abssize __cursize __newpath
+    local -i __i __level
+
+    set -- "$(normalize_path "$1")" "$(normalize_path "$2")"
+
+    # corner case #1 - self looping link
+    [[ "$1" == "$2" ]] && { echo "${1##*/}"; return; }
+
+    # corner case #2 - own dir link
+    [[ "${1%/*}" == "$2" ]] && { echo "."; return; }
+
+    IFS="/" __current=($1)
+    IFS="/" __absolute=($2)
+
+    __abssize=${#__absolute[@]}
+    __cursize=${#__current[@]}
+
+    while [[ ${__absolute[__level]} == ${__current[__level]} ]]
+    do
+        (( __level++ ))
+        if (( __level > __abssize || __level > __cursize ))
+        then
+            break
+        fi
+    done
+
+    for ((__i = __level; __i < __cursize-1; __i++))
+    do
+        if ((__i > __level))
+        then
+            __newpath=$__newpath"/"
+        fi
+        __newpath=$__newpath".."
+    done
+
+    for ((__i = __level; __i < __abssize; __i++))
+    do
+        if [[ -n $__newpath ]]
+        then
+            __newpath=$__newpath"/"
+        fi
+        __newpath=$__newpath${__absolute[__i]}
+    done
+
+    echo "$__newpath"
+}
+
+# returns OK if $1 contains $2 at the beginning
+str_starts() {
+    [ "${1#$2*}" != "$1" ]
+}
+
+ln_r() {
+    local _source=$1
+    local _dest=$2
+
+    if ! str_starts "$_source" "/"; then
+        ln -sfn "$_source" "${initdir}/${_dest}"
+    else
+        [[ -d "${_dest%/*}" ]] && _dest=$(readlink -f "${_dest%/*}")/${_dest##*/}
+        ln -sfn $(convert_abs_rel "${_dest}" "${_source}") "${initdir}/${_dest}"
+    fi
+}
+
 get_fs_env() {
     if [[ -x /lib/udev/vol_id ]]; then
 	eval $(/lib/udev/vol_id --export $1)
@@ -134,31 +220,28 @@ check_vol_slaves() {
 }
 
 # Install a directory, keeping symlinks as on the original system.
-# Example: if /lib64 points to /lib on the host, "inst_dir /lib/file"
+# Example: if /lib points to /lib64 on the host, "inst_dir /lib/file"
 # will create ${initdir}/lib64, ${initdir}/lib64/file,
 # and a symlink ${initdir}/lib -> lib64.
 inst_dir() {
-    local dir="$1"
-    [[ -e "${initdir}$dir" ]] && return 0
+    [[ -e ${initdir}/"$1" ]] && return 0  # already there
 
-    # iterate over parent directories
-    local file=""
-    local IFS="/"
-    for part in $dir; do
-        [ -z "$part" ] && continue
-        file="$file/$part"
-        [[ -e "${initdir}$file" ]] && continue
+    local _dir="$1" _part="${1%/*}" _file
+    while [[ "$_part" != "${_part%/*}" ]] && ! [[ -e "${initdir}/${_part}" ]]; do
+        _dir="$_part $_dir"
+        _part=${_part%/*}
+    done
 
-        if [ -L "$file" ]; then
-            # create link as the original
-            local target=$(readlink "$file")
-            ln -sfn "$target" "${initdir}$file" || return 1
-            # resolve relative path and recursively install destionation
-            [[ "$target" = "${target##*/}" ]] && target="${file%/*}/$target"
-            inst_dir "$target"
+        # iterate over parent directories
+    for _file in $_dir; do
+        [[ -e "${initdir}/$_file" ]] && continue
+        if [[ -L $_file ]]; then
+            inst_symlink "$_file"
         else
             # create directory
-            mkdir -p "${initdir}$file" || return 1
+            mkdir -m 0755 -p "${initdir}/$_file" || return 1
+            [[ -e "$_file" ]] && chmod --reference="$_file" "${initdir}/$_file"
+            chmod u+w "${initdir}/$_file"
         fi
     done
 }
@@ -198,7 +281,7 @@ inst_library() {
 	lib=${src##*/}
 	inst_simple "$reallib" "$reallib"
 	inst_dir "${dest%/*}"
-	(cd "${initdir}${dest%/*}" && ln -s "$reallib" "$lib")
+	ln_r "$reallib" "$dest"
     else
 	inst_simple "$src" "$dest"
     fi
@@ -272,12 +355,22 @@ inst_script() {
 
 # same as above, but specialized for symlinks
 inst_symlink() {
-    local src=$1 target=$initdir${2:-$1} realsrc
+    local _src=$1 _target=${2:-$1} _realsrc
+    strstr "$1" "/" || return 1
     [[ -L $1 ]] || return 1
-    [[ -L $target ]] && return 0
-    realsrc=$(readlink -f "$src")
-    [[ $realsrc = ${realsrc##*/} ]] && realsrc=${src%/*}/$realsrc
-    inst "$realsrc" && ln -s "$realsrc" "$target"
+    [[ -L $initdir/$_target ]] && return 0
+    _realsrc=$(readlink -f "$_src")
+    [[ ${_realsrc#/} = ${_realsrc} ]] && _realsrc="${_src%/*}/${_realsrc}"
+    if ! [[ -e $initdir/$_realsrc ]]; then
+        if [[ -d $_realsrc ]]; then
+            inst_dir "$_realsrc"
+        else
+            inst "$_realsrc"
+        fi
+    fi
+    [[ ! -e $initdir/${_target%/*} ]] && inst_dir "${_target%/*}"
+
+    ln_r "${_realsrc}" "${_target}"
 }
 
 # find a udev rule in the usual places.
