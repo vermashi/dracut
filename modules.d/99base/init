@@ -156,7 +156,7 @@ udevadm trigger --action=add $udevtriggeropts  >/dev/null 2>&1
 getarg 'rdbreak=initqueue' && emergency_shell -n initqueue "Break before initqueue"
 
 RDRETRY=$(getarg 'rd_retry=')
-RDRETRY=${RDRETRY:-20}
+RDRETRY=${RDRETRY:-40}
 RDRETRY=$(($RDRETRY*2))
 export RDRETRY
 main_loop=0
