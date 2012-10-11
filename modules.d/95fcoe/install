@@ -1,6 +1,6 @@
 #!/bin/bash
 
-dracut_install ip 
+dracut_install ip tr
 inst dcbtool 
 inst fipvlan
 inst lldpad

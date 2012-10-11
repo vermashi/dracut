@@ -10,7 +10,7 @@ fix_bootif() {
     macaddr=${macaddr%:}
     # strip hardware type field from pxelinux
     [ -n "${macaddr%??:??:??:??:??:??}" ] && macaddr=${macaddr#??:}
-    echo $macaddr
+    echo $macaddr | tr '[:upper:]' '[:lower:]'
 }
 
 # Don't continue if we don't need network

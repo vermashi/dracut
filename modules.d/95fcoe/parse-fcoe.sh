@@ -7,8 +7,6 @@
 # Note currently only nodcb is supported, the dcb option is reserved for
 # future use.
 #
-# Note letters in the macaddress must be lowercase!
-#
 # Examples:
 # fcoe=eth0:nodcb
 # fcoe=4a:3f:4c:04:f8:d7:nodcb
@@ -36,7 +34,7 @@ parse_fcoe_opts() {
             return 0
             ;;
         7)
-            fcoe_mac=$1:$2:$3:$4:$5:$6
+            fcoe_mac=$(echo $1:$2:$3:$4:$5:$6 | tr '[:upper:]' '[:lower:]')
             fcoe_dcb=$7
             return 0
             ;;
