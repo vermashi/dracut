@@ -19,6 +19,7 @@ livedev="$1"
 live_dir=$(getarg live_dir)
 [ -z "$live_dir" ] && live_dir="LiveOS"
 getarg live_ram && live_ram="yes"
+getarg no_eject && no_eject="yes"
 getarg reset_overlay && reset_overlay="yes"
 getarg readonly_overlay && readonly_overlay="--readonly" || readonly_overlay=""
 overlay=$(getarg overlay)
@@ -146,7 +147,9 @@ if [ -e "$SQUASHED" ] ; then
         dd if=$SQUASHED of=/squashed.img bs=512 2> /dev/null
         umount -n /dev/.initramfs/live
         echo "Done copying live image to RAM."
-        eject -p $livedev || :
+        if [ ! -n "$no_eject" ]; then
+            eject -p $livedev || :
+        fi
         SQUASHED="/squashed.img"
     fi
 
