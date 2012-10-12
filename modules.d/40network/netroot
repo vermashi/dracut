@@ -105,8 +105,8 @@ source_all netroot
 if $handler $netif $netroot $NEWROOT; then
     # Network rootfs mount successful
     for iface in $IFACES ; do
-	[ -f /tmp/dhclient.$iface.lease ] &&    cp /tmp/dhclient.$iface.lease    /tmp/net.$iface.lease
-	[ -f /tmp/dhclient.$iface.dhcpopts ] && cp /tmp/dhclient.$iface.dhcpopts /tmp/net.$iface.dhcpopts
+	[ -s /tmp/dhclient.$iface.lease ] &&    cp /tmp/dhclient.$iface.lease    /tmp/net.$iface.lease
+	[ -s /tmp/dhclient.$iface.dhcpopts ] && cp /tmp/dhclient.$iface.dhcpopts /tmp/net.$iface.dhcpopts
     done
 
     # Save used netif for later use
