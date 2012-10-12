@@ -25,7 +25,11 @@ done
 
 # Set or override primary interface 
 netif=$1
-[ -e "/tmp/net.bootdev" ] && read netif < /tmp/net.bootdev
+if [ -e "/tmp/net.bootdev" ]; then
+    read netif < /tmp/net.bootdev
+    # only boot from $netif
+    [ -n "$1" ] && [ -n "$netif"] && [ "$netif" != "$1" ] && exit 1
+fi
 
 # Figure out the handler for root=dhcp by recalling all netroot cmdline 
 # handlers
