@@ -235,7 +235,7 @@ make_client_root() {
 	inst /etc/nsswitch.conf /etc/nsswitch.conf
 	inst /etc/passwd /etc/passwd
 	inst /etc/group /etc/group
-	for i in /lib*/libnss_files**;do
+	for i in /lib*/libnss_files*;do
 	    inst_library $i
 	done
 
@@ -272,7 +272,7 @@ make_server_root() {
 	inst /etc/nsswitch.conf /etc/nsswitch.conf
 	inst /etc/passwd /etc/passwd
 	inst /etc/group /etc/group
-	for i in /lib*/libnss_files**;do
+	for i in /lib*/libnss_files*;do
 	    inst_library $i
 	done
 

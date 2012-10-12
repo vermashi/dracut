@@ -222,7 +222,7 @@ test_setup() {
 	fi
 
 	dracut_install $(ls {/usr,}$LIBDIR/libnfsidmap*.so* 2>/dev/null )
-	dracut_install $(ls {/usr,}$LIBDIR/libnss*.so 2>/dev/null)
+	dracut_install $(ls {/usr,}$LIBDIR/libnss_*.so 2>/dev/null)
 	(
 	    cd "$initdir";
 	    mkdir -p dev sys proc etc var/run tmp var/lib/{dhcpd,rpcbind}
@@ -232,7 +232,7 @@ test_setup() {
 	inst /etc/nsswitch.conf /etc/nsswitch.conf
 	inst /etc/passwd /etc/passwd
 	inst /etc/group /etc/group
-	for i in /lib*/libnss_files**;do
+	for i in /lib*/libnss_files*;do
 	    inst_library $i
 	done
 

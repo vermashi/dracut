@@ -13,11 +13,12 @@ run_server() {
     echo "MULTINIC TEST SETUP: Starting DHCP/NFS server"
 
     $testdir/run-qemu -hda server.ext2 -m 256M -nographic \
-	-net nic,macaddr=52:54:00:12:34:56,model=e1000 \
+	-net nic,macaddr=52:54:00:AB:34:56,model=e1000 \
         -net socket,listen=127.0.0.1:12345 \
 	-serial $SERIAL \
 	-kernel /boot/vmlinuz-$KVERSION \
 	-append "selinux=0 root=/dev/sda rdinitdebug rdinfo rdnetdebug rw quiet console=ttyS0,115200n81" \
+        -boot order=c \
 	-initrd initramfs.server -pidfile server.pid -daemonize || return 1
     sudo chmod 644 server.pid || return 1
 
@@ -45,33 +46,48 @@ client_test() {
     fi
 
     $testdir/run-qemu -hda client.img -m 512M -nographic \
-  	-net nic,macaddr=52:54:00:12:34:$mac1,model=e1000 \
-  	-net nic,macaddr=52:54:00:12:34:$mac2,model=e1000 \
-  	-net nic,macaddr=52:54:00:12:34:$mac3,model=e1000 \
+  	-net nic,macaddr=52:54:00:AB:34:$mac1,model=e1000 \
+  	-net nic,macaddr=52:54:00:AB:34:$mac2,model=e1000 \
+  	-net nic,macaddr=52:54:00:AB:34:$mac3,model=e1000 \
         -net socket,connect=127.0.0.1:12345 \
   	-kernel /boot/vmlinuz-$KVERSION \
   	-append "$cmdline $DEBUGFAIL rd_retry=5 rdinitdebug rdinfo rdnetdebug ro quiet console=ttyS0,115200n81 selinux=0 rdcopystate" \
+        -boot order=c \
   	-initrd initramfs.testing
 
     if [[ $? -ne 0 ]]; then
 	echo "CLIENT TEST END: $test_name [FAILED - BAD EXIT]"
 	return 1
     fi
-    if ! grep -m 1 -q OK client.img; then
+
+    read line < client.img
+
+    if [[ $line != OK* ]]; then
 	echo "CLIENT TEST END: $test_name [FAILED - NO OK]"
 	return 1
     fi
 
+    echo "Checking '$line' for 'OK $check'"
 
-
-    for i in $check ; do
-	echo $i
-	if ! grep -m 1 -q $i client.img; then
+    for i in $check; do
+        if [[ $line != *$i* ]]; then
+            echo "'$line' does not contain '$i'"
 	    echo "CLIENT TEST END: $test_name [FAILED - BAD IF]"
 	    return 1
-	fi
+        fi
     done
 
+set -x
+    for i in $line; do
+        [[ $i == "OK" ]] && continue
+
+        if [[ $check != *${i}* ]]; then
+            echo "'$check' does not contain '$i'"
+	    echo "CLIENT TEST END: $test_name [FAILED - BAD IF]"
+	    return 1
+        fi
+    done
+set +x
     echo "CLIENT TEST END: $test_name [OK]"
     return 0
 }
@@ -87,45 +103,51 @@ test_run() {
     # ...:00-02 receive IP adresses all others don't
     # ...:02 receives a dhcp root-path
 
-    # PXE Style BOOTIF=
-    client_test "MULTINIC root=nfs BOOTIF=" \
-	00 01 02 \
-	"root=nfs:192.168.50.1:/nfs/client BOOTIF=52-54-00-12-34-00" \
-	"eth0" || return 1
-
-    # PXE Style BOOTIF= with dhcp root-path
-    client_test "MULTINIC root=dhcp BOOTIF=" \
-	00 01 02 \
-	"root=dhcp BOOTIF=52-54-00-12-34-02" \
-	"eth2" || return 1
-
-    # Multinic case, where only one nic works
-    client_test "MULTINIC root=nfs ip=dhcp" \
-	FF 00 FE \
-	"root=nfs:192.168.50.1:/nfs/client ip=dhcp" \
-	"eth1" || return 1
-
-    client_test "MULTINIC root=nfs ip=auto6,dhcp" \
-	FF 00 FE \
-	"root=nfs:192.168.50.1:/nfs/client ip=auto6,dhcp" \
-	"eth1" || return 1
-
     client_test "MULTINIC root=nfs ip=dhcp,auto" \
 	FF 00 FE \
-	"root=nfs:192.168.50.1:/nfs/client ip=dhcp,auto6" \
-	"eth1" || return 1
+	"root=nfs:192.168.50.1:/nfs/client ip=dhcp,auto6 ifname=eth0:52:54:00:AB:34:FF ifname=eth1:52:54:00:AB:34:00 ifname=eth2:52:54:00:AB:34:FE" \
+	"eth1 -eth1-" || return 1
 
     # Require two interfaces
     client_test "MULTINIC root=nfs ip=eth1:dhcp ip=eth2:dhcp bootdev=eth1" \
 	00 01 02 \
 	"root=nfs:192.168.50.1:/nfs/client ip=eth1:dhcp ip=eth2:dhcp bootdev=eth1" \
-	"eth1 eth2" || return 1
+	"eth1 eth2 -eth1-" || return 1
 
     # Require three interfaces with dhcp root-path
     client_test "MULTINIC root=dhcp ip=eth0:dhcp ip=eth1:dhcp ip=eth2:dhcp bootdev=eth2" \
 	00 01 02 \
-	"root=dhcp ip=eth0:dhcp ip=eth1:dhcp ip=eth2:dhcp bootdev=eth2" \
-	"eth0 eth1 eth2" || return 1
+	"root=dhcp ip=eth0:dhcp ip=eth1:dhcp ip=eth2:dhcp bootdev=eth2 ifname=eth0:52:54:00:AB:34:00 ifname=eth1:52:54:00:AB:34:01 ifname=eth2:52:54:00:AB:34:02" \
+	"eth0 eth1 eth2 -eth2-" || return 1
+
+    client_test "MULTINIC root=nfs ip=auto6,dhcp" \
+	FF 00 FE \
+	"root=nfs:192.168.50.1:/nfs/client ip=auto6,dhcp ifname=eth0:52:54:00:AB:34:FF ifname=eth1:52:54:00:AB:34:00 ifname=eth2:52:54:00:AB:34:FE" \
+	"eth1 -eth1-" || return 1
+
+    # PXE Style BOOTIF=
+    client_test "MULTINIC root=nfs BOOTIF=" \
+	00 01 02 \
+	"root=nfs:192.168.50.1:/nfs/client BOOTIF=52-54-00-AB-34-00 ifname=eth0:52:54:00:AB:34:00 ifname=eth1:52:54:00:AB:34:01 ifname=eth2:52:54:00:AB:34:02" \
+	"eth0 -eth0-" || return 1
+
+    # PXE Style BOOTIF= with dhcp root-path
+    client_test "MULTINIC root=dhcp BOOTIF=" \
+	00 01 02 \
+	"root=dhcp BOOTIF=52-54-00-AB-34-02 ifname=eth0:52:54:00:AB:34:00 ifname=eth1:52:54:00:AB:34:01 ifname=eth2:52:54:00:AB:34:02" \
+	"eth2 -eth2-" || return 1
+
+    # Multinic case, where only one nic works
+    client_test "MULTINIC root=nfs ip=dhcp" \
+	FF 00 FE \
+	"root=nfs:192.168.50.1:/nfs/client ip=dhcp ifname=eth0:52:54:00:AB:34:FF ifname=eth1:52:54:00:AB:34:00 ifname=eth2:52:54:00:AB:34:FE" \
+	"eth1 -eth1-" || return 1
+
+    # Require three interfaces with dhcp root-path
+    client_test "MULTINIC root=dhcp ip=eth0:dhcp ip=eth1:dhcp ip=eth2:dhcp bootdev=eth2" \
+	00 01 02 \
+	"root=dhcp ip=eth0:dhcp ip=eth1:dhcp ip=eth2:dhcp bootdev=eth2 ifname=eth0:52:54:00:AB:34:00 ifname=eth1:52:54:00:AB:34:01 ifname=eth2:52:54:00:AB:34:02" \
+	"eth0 eth1 eth2 -eth2-" || return 1
 }
 
 test_setup() {
@@ -162,7 +184,7 @@ test_setup() {
  	fi
 
  	dracut_install $(ls {/usr,}$LIBDIR/libnfsidmap*.so* 2>/dev/null )
- 	dracut_install $(ls {/usr,}$LIBDIR/libnss*.so 2>/dev/null)
+ 	dracut_install $(ls {/usr,}$LIBDIR/libnss_*.so 2>/dev/null)
  	(
  	    cd "$initdir";
  	    mkdir -p dev sys proc etc var/run tmp var/lib/{dhcpd,rpcbind}
@@ -172,7 +194,7 @@ test_setup() {
  	inst /etc/nsswitch.conf /etc/nsswitch.conf
  	inst /etc/passwd /etc/passwd
  	inst /etc/group /etc/group
- 	for i in /lib*/libnss_files**;do
+ 	for i in /lib*/libnss_files*;do
  	    inst_library $i
  	done
 
@@ -231,7 +253,7 @@ test_setup() {
     $basedir/dracut -l -i overlay / \
 	-o "plymouth" \
 	-a "debug" \
-	-d "piix ide-gd_mod e1000 nfs sunrpc" \
+	-d "piix ide-gd_mod ata_piix sd_mod e1000 nfs sunrpc" \
 	-f initramfs.testing $KVERSION || return 1
 }
 
