@@ -189,6 +189,8 @@ rm $RPM_BUILD_ROOT/sbin/lsinitrd
 mkdir -p $RPM_BUILD_ROOT/etc/logrotate.d
 install -m 0644 dracut.logrotate $RPM_BUILD_ROOT/etc/logrotate.d/dracut
 
+echo 'do_strip=no' > $RPM_BUILD_ROOT/etc/dracut.conf.d/02-fips.conf
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -255,6 +257,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,0755)
 %doc COPYING
 %{_datadir}/dracut/modules.d/01fips
+%config(noreplace) /etc/dracut.conf.d/02-fips.conf
 
 %files fips-aesni
 %defattr(-,root,root,0755)
