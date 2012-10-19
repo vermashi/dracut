@@ -104,6 +104,18 @@ if [ -e /tmp/bridge.info ]; then
     fi
 fi
 
+if [ -e /tmp/vlan.info ]; then
+    . /tmp/vlan.info
+    if [ "$netif" = "$phydevice" ]; then
+        if [ "$netif" = "$bondname" ] && [ -n "$DO_BOND_SETUP" ] ; then
+            : # We need to really setup bond (recursive call)
+        else
+            netif="$vlanname"
+        fi
+    fi
+fi
+
+
 # bail immediately if the interface is already up
 # or we don't need the network
 [ -f "/tmp/net.$netif.up" ] && exit 0
@@ -131,6 +143,24 @@ if [ "$netif" = "$bridgename" ] && [ ! -e /tmp/net.$bridgename.up ]; then
     brctl addif $bridgename $ethname
 fi
 
+get_vid() {
+    case "$1" in
+        vlan*)
+            return ${1#vlan}
+            ;;
+        *.*)
+            return ${1##*.}
+            ;;
+    esac
+}
+
+if [ "$netif" = "$vlanname" ] && [ ! -e /tmp/net.$vlanname.up ]; then
+    modprobe 8021q
+    ip link set "$phydevice" up
+    wait_for_if_up "$phydevice"
+    ip link add dev "$vlanname" link "$phydevice" type vlan id "$(get_vid $vlanname; echo $?)"
+fi
+
 # No ip lines default to dhcp
 ip=$(getarg ip)
 
@@ -148,7 +178,7 @@ for p in $(getargs ip=); do
     ip_to_var $p
     # skip ibft
     [ "$autoconf" = "ibft" ] && continue
-	
+
     # If this option isn't directed at our interface, skip it
     [ -n "$dev" ] && [ "$dev" != "$netif" ] && continue
 

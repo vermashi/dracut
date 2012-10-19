@@ -21,7 +21,12 @@ fix_bootif() {
     # bridge: attempt only the defined interface
     if [ -e /tmp/bridge.info ]; then
         . /tmp/bridge.info
-        IFACES=$ethname
+        IFACES="$IFACES $ethname"
+    fi
+
+    if [ -e /tmp/vlan.info ]; then
+        . /tmp/vlan.info
+        IFACES="$IFACES $phydevice"
     fi
 
     # BOOTIF says everything, use only that one

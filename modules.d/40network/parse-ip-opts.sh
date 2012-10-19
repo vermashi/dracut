@@ -86,6 +86,11 @@ if [ "ibft" = "$(getarg ip=)" ]; then
 		hostname=$(read a < ${iface}/hostname; echo $a)
 		echo "ip=$ip::$gw:$mask:$hostname:$dev:none"
 	    fi
+
+            if [ -e ${iface}/vlan ]; then
+		vlan=$(read a < ${iface}/vlan; echo $a)
+                echo "vlan=$vlan:$dev"
+            fi
 	done
     ) >> /etc/cmdline
     # reread cmdline

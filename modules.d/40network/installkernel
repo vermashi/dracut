@@ -15,3 +15,5 @@ instmods ecb arc4
 # bridge modules
 instmods bridge stp llc
 instmods ipv6
+# vlan
+instmods 8021q

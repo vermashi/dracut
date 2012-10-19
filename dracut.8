@@ -314,6 +314,11 @@ Required if multiple ip= lines are used.
 .BR nameserver= "<IP> [nameserver=<IP> ...]"
 specify nameserver(s) to use
 .TP
+.BR vlan= "<vlanname>:<phydevice>"
+Setup vlan device named <vlanname> on <phydeivce>.
+ We support the four styles of vlan names: VLAN_PLUS_VID (vlan0005), VLAN_PLUS_VID_NO_PAD (vlan5),
+DEV_PLUS_VID (eth0.0005), DEV_PLUS_VID_NO_PAD (eth0.5)
+.TP
 .BR biosdevname={0|1]}
 turn off/on biosdevname network interface renaming
 .SS NFS
