@@ -39,7 +39,7 @@ case "$liveroot" in
 esac
 info "root was $root, liveroot is now $liveroot"
 
-if [ "${root##live:/dev/}:" != "$root" ]; then
+if [ "${root##live:/dev/}" != "$root" ]; then
     [ -d /dev/.udev/rules.d ] || mkdir -p /dev/.udev/rules.d
     {
         printf 'KERNEL=="%s", SYMLINK+="live"\n' \
