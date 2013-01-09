@@ -5,7 +5,7 @@ if [[ -z $drivers ]]; then
 
 	egrep -q "$blockfuncs" "$1"
     }
-    hostonly='' instmods sr_mod sd_mod scsi_dh scsi_dh_rdac scsi_dh_emc
+    hostonly='' instmods sr_mod sd_mod scsi_dh scsi_dh_rdac scsi_dh_emc scsi_dh_alua
     hostonly='' instmods pcmcia firewire-ohci
     hostonly='' instmods usb_storage sdhci sdhci-pci
 
