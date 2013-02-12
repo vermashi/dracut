@@ -39,4 +39,5 @@ fi
 
 mv -f "/tmp/$$-${job}.sh" "/initqueue${queue}/${job}.sh"
 [ -z "$queue" ] && >> /initqueue/work
+exit 0
 
