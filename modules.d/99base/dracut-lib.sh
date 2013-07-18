@@ -4,6 +4,24 @@ strstr() {
   [ "${1#*$2*}" != "$1" ]
 }
 
+# replaces all occurrences of 'search' in 'str' with 'replacement'
+#
+# str_replace str search replacement
+#
+# example:
+# str_replace '  one two  three  ' ' ' '_'
+str_replace() {
+    local in="$1"; local s="$2"; local r="$3"
+    local out=''
+
+    while strstr "${in}" "$s"; do
+        chop="${in%%$s*}"
+        out="${out}${chop}$r"
+        in="${in#*$s}"
+    done
+    echo "${out}${in}"
+}
+
 getarg() {
     set +x 
     local o line

@@ -64,6 +64,7 @@ if [ -n "$iscsi_firmware" ] ; then
     netroot=${netroot:-iscsi}
     modprobe -q iscsi_ibft
     modprobe -q iscsi_boot_sysfs 2>/dev/null
+    echo "[ -f '/tmp/iscsistarted-firmware' ]" > /initqueue-finished/iscsi_firmware_started.sh
 fi
 
 # If it's not iscsi we don't continue
@@ -77,6 +78,15 @@ fi
 if ! [ -e /sys/module/iscsi_tcp ]; then
     modprobe -q iscsi_tcp || die "iscsiroot requested but kernel/initrd does not support iscsi"
 fi
+
+if [ -n "$netroot" ] && [ "$root" != "/dev/root" ] && [ "$root" != "dhcp" ]; then
+    if ! getarg "ip="; then
+        initqueue --onetime --settled /sbin/iscsiroot dummy "$netroot" "$NEWROOT"
+    fi
+fi
+
+netroot_enc=$(str_replace "$netroot" '/' '\2f')
+echo "[ -f '/tmp/iscsistarted-$netroot_enc' ]" > initqueue-finished/iscsi_started.sh
 
 # Done, all good!
 rootok=1

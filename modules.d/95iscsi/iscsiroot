@@ -51,6 +51,10 @@ if getarg iscsi_firmware ; then
     done
 
     iscsistart -b $iscsi_param
+
+    echo 'started' > "/tmp/iscsistarted-iscsi"
+    echo 'started' > "/tmp/iscsistarted-firmware"
+
     exit 0
 fi
 
@@ -153,6 +157,11 @@ handle_netroot()
 	${iscsi_netdev_name+--param iface.net_ifacename=$iscsi_netdev_name} \
 	${iscsi_param} \
 	|| :
+
+
+    netroot_enc=$(str_replace "$1" '/' '\2f')
+    echo 'started' > "/tmp/iscsistarted-iscsi:${netroot_enc}"
+
 
 # install mount script
     if [ -n "${root%%block:*}" ]; then
