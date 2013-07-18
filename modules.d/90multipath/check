@@ -14,12 +14,8 @@ is_mpath() {
     return 1
 }
 
-if [[ $1 = -h ]]; then
-    rootdev=$(find_root_block_device)
-    if [[ $rootdev ]]; then
-        check_block_and_slaves is_mpath "$rootdev" && exit 0
-    fi
-    exit 1
+rootdev=$(find_root_block_device)
+if [[ $rootdev ]]; then
+    check_block_and_slaves is_mpath "$rootdev" && exit 0
 fi
-
-exit 0
+exit 1
