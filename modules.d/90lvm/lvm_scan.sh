@@ -75,7 +75,7 @@ if [ -n "$LVS" ] ; then
     if [ -z "$sysinit" ]; then
         lvm lvchange -ay --ignorelockingfailure $nopoll --ignoremonitoring $LVS 2>&1 | vinfo
     else
-        lvm lvchange -ay $sysinit $LVS 2>&1 | vinfo
+        lvm lvchange --yes -ay $sysinit $LVS 2>&1 | vinfo
     fi
 fi
 
