@@ -210,6 +210,8 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) /etc/dracut.conf
 %dir /etc/dracut.conf.d
 %config(noreplace) /etc/logrotate.d/dracut
+%{_mandir}/man1/lsinitrd.1*
+%{_mandir}/man8/mkinitrd.8*
 %{_mandir}/man8/dracut.8*
 %{_mandir}/man5/dracut.conf.5*
 %{_datadir}/dracut/modules.d/00dash
