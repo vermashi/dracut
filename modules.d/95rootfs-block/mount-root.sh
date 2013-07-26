@@ -3,13 +3,14 @@
 . /lib/dracut-lib.sh
 
 filter_rootopts() {
+    local v
+    v=""
     rootopts=$1
     # strip ro and rw options
     local OLDIFS="$IFS"
     IFS=,
     set -- $rootopts
     IFS="$OLDIFS"
-    local v
     while [ $# -gt 0 ]; do
         case $1 in
             rw|ro);;
