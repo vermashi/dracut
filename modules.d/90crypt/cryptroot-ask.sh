@@ -33,7 +33,7 @@ else
 fi
 
 # TODO: improve to support what cmdline does
-if [ -f /etc/crypttab ] && getargbool 1 rd.luks.crypttab -n rd_NO_CRYPTTAB; then
+if [ -f /etc/crypttab ] && getargs rd_NO_CRYPTTAB; then
     while read name dev luksfile rest; do
         # ignore blank lines and comments
         if [ -z "$name" -o "${name#\#}" != "$name" ]; then
