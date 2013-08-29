@@ -36,7 +36,7 @@ if [ "$dcb" = "dcb" ]; then
     dcbtool sc "$netif" app:fcoe e:1 a:1 w:1
     sleep 1
     fipvlan "$netif" -c -s -f "-fcoe"
-elif [ "$netdriver" = "bnx2x" ]; then
+elif [ "$netdriver" = "bnx2x" ] || getarg 'autovlan=yes'; then
     # If driver is bnx2x, do not use /sys/module/fcoe/parameters/create but fipvlan
     modprobe 8021q
     udevadm settle --timeout=30 >/dev/null 2>&1
