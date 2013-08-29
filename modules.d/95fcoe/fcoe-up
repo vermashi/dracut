@@ -35,14 +35,14 @@ if [ "$dcb" = "dcb" ]; then
     sleep 1
     dcbtool sc "$netif" app:fcoe e:1 a:1 w:1
     sleep 1
-    fipvlan "$netif" -c -s
+    fipvlan "$netif" -c -s -f "-fcoe"
 elif [ "$netdriver" = "bnx2x" ]; then
     # If driver is bnx2x, do not use /sys/module/fcoe/parameters/create but fipvlan
     modprobe 8021q
     udevadm settle --timeout=30 >/dev/null 2>&1
     # Sleep for 3 s to allow dcb negotiation
     sleep 3
-    fipvlan "$netif" -c -s
+    fipvlan "$netif" -c -s -f "-fcoe"
 else
     echo -n "$netif" > /sys/module/fcoe/parameters/create
 fi
