@@ -114,6 +114,13 @@ die() {
     exit 1
 }
 
+fatal() {
+    check_quiet
+    echo "<4>dracut FATAL: $@" > /dev/kmsg
+    [ "$DRACUT_QUIET" != "yes" ] && \
+        echo "dracut FATAL: $@" >&2
+}
+
 check_quiet() {
     if [ -z "$DRACUT_QUIET" ]; then
 	DRACUT_QUIET="yes"
