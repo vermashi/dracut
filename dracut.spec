@@ -190,7 +190,7 @@ mkdir -p $RPM_BUILD_ROOT/etc/logrotate.d
 install -m 0644 dracut.logrotate $RPM_BUILD_ROOT/etc/logrotate.d/dracut
 
 echo 'do_strip=no' > $RPM_BUILD_ROOT/etc/dracut.conf.d/02-fips.conf
-> $RPM_BUILD_ROOT/etc/redhat-fips
+> $RPM_BUILD_ROOT/etc/system-fips
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -261,7 +261,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc COPYING
 %{_datadir}/dracut/modules.d/01fips
 %config(noreplace) /etc/dracut.conf.d/02-fips.conf
-%config(missingok) /etc/redhat-fips
+%config(missingok) /etc/system-fips
 
 %files fips-aesni
 %defattr(-,root,root,0755)
