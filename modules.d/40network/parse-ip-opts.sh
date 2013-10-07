@@ -76,20 +76,29 @@ if [ "ibft" = "$(getarg ip=)" ]; then
 		dev=$ifname_if
 	    fi
 
-	    dhcp=$(read a < ${iface}/dhcp; echo $a)
+	    [ -e ${iface}/dhcp ] && dhcp=$(read a < ${iface}/dhcp; echo $a)
 	    if [ -n "$dhcp" ]; then
 		echo "ip=$dev:dhcp"
 	    else
-		ip=$(read a < ${iface}/ip-addr; echo $a)
-		gw=$(read a < ${iface}/gateway; echo $a)
-		mask=$(read a < ${iface}/subnet-mask; echo $a)
-		hostname=$(read a < ${iface}/hostname; echo $a)
+		[ -e ${iface}/ip-addr ] && ip=$(read a < ${iface}/ip-addr; echo $a)
+		[ -e ${iface}/gateway ] && gw=$(read a < ${iface}/gateway; echo $a)
+		[ -e ${iface}/subnet-mask ] && mask=$(read a < ${iface}/subnet-mask; echo $a)
+		[ -e ${iface}/hostname ] && hostname=$(read a < ${iface}/hostname; echo $a)
 		echo "ip=$ip::$gw:$mask:$hostname:$dev:none"
 	    fi
 
             if [ -e ${iface}/vlan ]; then
 		vlan=$(read a < ${iface}/vlan; echo $a)
-                echo "vlan=$vlan:$dev"
+                if [ "$vlan" -ne "0" ]; then
+                    case "$vlan" in
+                        [0-9]*)
+                            echo "vlan=$dev.$vlan:$dev"
+                            ;;
+                        *)
+                            echo "vlan=$vlan:$dev"
+                            ;;
+                    esac
+                fi
             fi
 	done
     ) >> /etc/cmdline
