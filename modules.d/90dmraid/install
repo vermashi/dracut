@@ -3,7 +3,7 @@ dracut_install dmraid partx kpartx
 
 inst  dmeventd
 
-if ldd $(which dmraid) | grep -q lib64; then
+if ldd $(which dmraid) 2>/dev/null | grep -q lib64; then
     LIBDIR="/lib64"
 else
     LIBDIR="/lib"

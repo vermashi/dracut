@@ -9,7 +9,7 @@ dracut_install /etc/nsswitch.conf /etc/rpc /etc/protocols
 dracut_install rpc.idmapd /etc/idmapd.conf
 dracut_install sed
 
-if ldd $(which rpc.idmapd) |grep -q lib64; then
+if ldd $(which rpc.idmapd) 2>/dev/null | grep -q lib64; then
     LIBDIR="/lib64"
 else
     LIBDIR="/lib"
