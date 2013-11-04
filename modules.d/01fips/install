@@ -20,13 +20,15 @@ else
         /$libdir/libfreebl3.so /$libdir/libfreebl3.chk 
 fi
 
-for i in /{usr,}/$libdir/libssl.so* /{usr,}/$libdir/libcrypto.so*; do
+for i in /{usr,}/$libdir/libssl.so* /{usr,}/$libdir/libcrypto.so* \
+         /{usr,}/$libdir/.libssl.so*.hmac /{usr,}/$libdir/.libcrypto.so*.hmac; do
     [ -e $i ] || continue
     dracut_install $i
 done
 
-dracut_install /usr/$libdir/hmaccalc/sha512hmac.hmac
+dracut_install -o /usr/$libdir/hmaccalc/sha*hmac.hmac
 dracut_install fipscheck
+dracut_install /etc/system-fips
 
 if command -v prelink >/dev/null; then
     dracut_install prelink
