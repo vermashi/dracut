@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ -e /etc/multipath.conf ]; then
+if ! getarg rd_NO_MULTIPATH && [ -e /etc/multipath.conf ]; then
     modprobe dm-multipath
     multipathd -B || multipathd
 else
