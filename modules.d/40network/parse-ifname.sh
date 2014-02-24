@@ -10,11 +10,6 @@
 # Note when using ifname= to get persistent interface names, you must specify
 # an ifname= argument for each interface used in an ip= or fcoe= argument
 
-# check if there are any ifname parameters
-if ! getarg ifname= >/dev/null ; then
-    return
-fi
-
 parse_ifname_opts() {
     local IFS=:
     set $1
@@ -30,6 +25,11 @@ parse_ifname_opts() {
             ;;
     esac
 }
+
+# check if there are any ifname parameters
+if ! getarg ifname= >/dev/null ; then
+    return
+fi
 
 # Check ifname= lines
 for p in $(getargs ifname=); do
