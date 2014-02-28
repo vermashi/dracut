@@ -108,6 +108,8 @@ mkdir /dev/pts
 mount -t devpts -o gid=5,mode=620 devpts /dev/pts >/dev/null 2>&1
 mount -t tmpfs tmpfs /dev/shm >/dev/null 2>&1
 
+mknod -m 0600 /dev/btrfs-control c 10 234
+
 UDEVVERSION=$(udevadm --version)
 
 source_conf /etc/conf.d
