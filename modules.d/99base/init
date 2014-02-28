@@ -135,6 +135,9 @@ source_all cmdline
 getarg 'rdbreak=pre-udev' && emergency_shell -n pre-udev "Break before pre-udev"
 source_all pre-udev
 
+# set firmware loading timeout to 600
+echo 600 > /sys/class/firmware/timeout
+
 # start up udev and trigger cold plugs
 udevd --daemon --resolve-names=never
 
