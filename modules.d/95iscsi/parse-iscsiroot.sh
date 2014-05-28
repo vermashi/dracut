@@ -79,10 +79,15 @@ if ! [ -e /sys/module/iscsi_tcp ]; then
     modprobe -q iscsi_tcp || die "iscsiroot requested but kernel/initrd does not support iscsi"
 fi
 
-if [ -n "$netroot" ] && [ "$root" != "/dev/root" ] && [ "$root" != "dhcp" ]; then
-    if ! getarg "ip="; then
-        initqueue --onetime --settled /sbin/iscsiroot dummy "$netroot" "$NEWROOT"
-    fi
+if [ -n "$iscsi_firmware" ] || \
+    ( [ -n "$netroot" ] && [ "$root" != "/dev/root" ] && [ "$root" != "dhcp" ] && ! getarg "ip=" )
+    then
+    initqueue --onetime --settled /sbin/iscsiroot dummy "$netroot" "$NEWROOT"
+else
+    # also call iscsiroot for misconfigured "ip=" or link down or MAC addr change
+    # or replaced NIC
+    # in the timeout queue
+    initqueue --onetime --timeout /sbin/iscsiroot dummy "$netroot" "$NEWROOT"
 fi
 
 netroot_enc=$(str_replace "$netroot" '/' '\2f')
