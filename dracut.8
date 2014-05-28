@@ -137,6 +137,9 @@ specify additional mount options for the root filesystem. If not set, /etc/fstab
 of the real root will be parsed for special mount options and mounted 
 accordingly.
 .TP
+\fBrootfallback=\fR\fI<path to blockdevice>\fR
+specify the block device to use as the root filesystem, if the normal root cannot be found\&. This can only be a simple block device with a simple file system, for which the filesystem driver is either compiled in, or added manually to the initramfs\&. This parameter can be specified multiple times\&.
+.TP
 .B rd_NO_FSTAB
 do not honor special mount options for the root filesystem found in 
 /etc/fstab of the real root.
