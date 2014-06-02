@@ -225,7 +225,8 @@ if [[ -f "$outfile" ]] &&  ! [[ -w "$outfile" ]]; then
     exit 1
 fi
 
-hookdirs="cmdline pre-udev pre-trigger netroot pre-mount pre-pivot mount emergency"
+hookdirs="cmdline pre-udev pre-trigger netroot pre-mount pre-pivot mount emergency initqueue initqueue-finished initqueue-settled initqueue-timeout
+"
 
 [[ -n "$TMPDIR" ]] && ! [[ -w "$TMPDIR" ]] && unset TMPDIR
 readonly initdir=$(mktemp -d -t initramfs.XXXXXX)
