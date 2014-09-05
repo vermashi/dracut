@@ -29,6 +29,7 @@ wait_for_loginit()
             HARD="-9"
         done
 	set -x
+    rm -f /dev/initlog.pipe
     fi
 }
 
