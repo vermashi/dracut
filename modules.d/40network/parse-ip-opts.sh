@@ -59,6 +59,14 @@ if [ "ibft" = "$(getarg ip=)" ]; then
     num=0
     (
 	for iface in /sys/firmware/ibft/ethernet*; do
+        unset ifname_mac
+        unset ifname_if
+        unset dhcp
+        unset ip
+        unset gw
+        unset mask
+        unset hostname
+        unset vlan
 	    [ -e ${iface}/mac ] || continue
             ifname_mac=$(read a < ${iface}/mac; echo $a)
 	    [ -z "$ifname_mac" ] && continue
@@ -81,10 +89,11 @@ if [ "ibft" = "$(getarg ip=)" ]; then
 		echo "ip=$dev:dhcp"
 	    else
 		[ -e ${iface}/ip-addr ] && ip=$(read a < ${iface}/ip-addr; echo $a)
+		[ "$ip" = "0.0.0.0" ] && unset ip
 		[ -e ${iface}/gateway ] && gw=$(read a < ${iface}/gateway; echo $a)
 		[ -e ${iface}/subnet-mask ] && mask=$(read a < ${iface}/subnet-mask; echo $a)
 		[ -e ${iface}/hostname ] && hostname=$(read a < ${iface}/hostname; echo $a)
-		echo "ip=$ip::$gw:$mask:$hostname:$dev:none"
+		[ -n "$ip" ] && echo "ip=$ip::$gw:$mask:$hostname:$dev:none"
 	    fi
 
             if [ -e ${iface}/vlan ]; then
