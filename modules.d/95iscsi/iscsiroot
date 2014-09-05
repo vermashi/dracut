@@ -35,17 +35,18 @@ iroot=${iroot#iscsi:}
 
 [ -e /sys/module/bnx2i ] && iscsiuio
 
-if getarg iscsi_firmware ; then
+if getarg iscsi_firmware && ! [ -f /tmp/iscsistarted-firmware ]; then
     if [ -n "${root%%block:*}" ]; then
         # if root is not specified try to mount the whole iSCSI LUN
-	printf 'ENV{DEVTYPE}!="partition", SYMLINK=="disk/by-path/*-iscsi-*-*", SYMLINK+="root"\n' >> /etc/udev/rules.d/99-iscsi-root.rules
+        printf 'ENV{DEVTYPE}!="partition", SYMLINK=="disk/by-path/*-iscsi-*-*", SYMLINK+="root"\n' >> /etc/udev/rules.d/99-iscsi-root.rules
     fi
 
     for p in $(getargs iscsi_param); do
-	iscsi_param="$iscsi_param --param $p"
+        iscsi_param="$iscsi_param --param $p"
     done
 
-    iscsistart -b $iscsi_param
+    iscsistart -N
+    iscsistart -b $iscsi_param </dev/null >>/tmp/iscsiroot.out 2>&1&
 
     echo 'started' > "/tmp/iscsistarted-iscsi"
     echo 'started' > "/tmp/iscsistarted-firmware"
