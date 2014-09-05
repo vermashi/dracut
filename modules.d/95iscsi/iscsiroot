@@ -31,11 +31,6 @@ source_all /etc/conf.d
 
 iroot=${iroot#iscsi:}
 
-# XXX modprobe crc32c should go in the cmdline parser, but I haven't yet
-# figured out a way how to check whether this is built-in or not
-modprobe crc32c 2>/dev/null
-
-
 [ -e /tmp/root.info ] && . /tmp/root.info
 
 [ -e /sys/module/bnx2i ] && iscsiuio
