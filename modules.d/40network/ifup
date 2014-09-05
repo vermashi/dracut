@@ -5,7 +5,13 @@
 #
 PATH=$PATH:/sbin:/usr/sbin
 
+export PS4="ifup.$1.$$ + "
+
 . /lib/dracut-lib.sh
+
+[ "$RDDEBUG" = "yes" ] \
+    && [ -e /dev/initlog.pipe ] \
+    && exec >>/dev/initlog.pipe 2>>/dev/initlog.pipe
 
 # Run dhclient
 do_dhcp() {
@@ -83,12 +89,6 @@ do_static() {
     echo online > /sys/class/net/$netif/uevent
     /sbin/initqueue --onetime --name netroot-$netif  /sbin/netroot $netif 
 }
-
-PATH=$PATH:/sbin:/usr/sbin
-
-export PS4="ifup.$1.$$ + "
-exec >>/dev/initlog.pipe 2>>/dev/initlog.pipe
-. /lib/dracut-lib.sh
 
 # Huh? No $1?
 [ -z "$1" ] && exit 1
