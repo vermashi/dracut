@@ -21,7 +21,6 @@
 [ -e /sys/module/fcoe/parameters/create ] || modprobe -a fcoe || die "FCoE requested but kernel/initrd does not support FCoE"
 
 modprobe bnx2fc >/dev/null 2>&1
-udevadm settle --timeout=30 >/dev/null 2>&1
 
 parse_fcoe_opts() {
     local IFS=:
@@ -45,22 +44,21 @@ parse_fcoe_opts() {
     esac
 }
 
-parse_fcoe_opts
+for fcoe in $(getargs fcoe=); do
+    unset fcoe_mac
+    unset fcoe_interface
+    parse_fcoe_opts
 
-if [ "$fcoe_interface" = "edd" ]; then
-    if [ "$fcoe_dcb" != "nodcb" -a "$fcoe_dcb" != "dcb" ] ; then
-        warn "Invalid FCoE DCB option: $fcoe_dcb"
-    fi
-    /sbin/initqueue --settled --unique /sbin/fcoe-edd $fcoe_dcb
-else
-    for fcoe in $(getargs fcoe=); do
-        unset fcoe_mac
-        unset fcoe_interface
-        parse_fcoe_opts
+    if [ "$fcoe_interface" = "edd" ]; then
+        if [ "$fcoe_dcb" != "nodcb" -a "$fcoe_dcb" != "dcb" ] ; then
+            warn "Invalid FCoE DCB option: $fcoe_dcb"
+        fi
+        /sbin/initqueue --settled --unique /sbin/fcoe-edd $fcoe_dcb
+    else
         if [ "$fcoe_dcb" != "nodcb" -a "$fcoe_dcb" != "dcb" ] ; then
             warn "Invalid FCoE DCB option: $fcoe_dcb"
         fi
         . /sbin/fcoe-genrules.sh
-    done
-fi
+    fi
+done
 
