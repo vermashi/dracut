@@ -285,9 +285,15 @@ killproc() {
 parse_iscsi_root()
 {
     local v
-    v=${1#iscsi:}
+    v=${1#iscsi}
+    v=${v#:}
 
-# extract authentication info
+    if [ -z "$v" ]; then
+        warn "parse_iscsi_root '$1' with invalid paramater"
+        return 1
+    fi
+
+    # extract authentication info
     case "$v" in
 	*@*:*:*:*:*)
 	    authinfo=${v%%@*}
