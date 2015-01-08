@@ -46,8 +46,9 @@ if getarg iscsi_firmware && ! [ -f /tmp/iscsistarted-firmware ]; then
     done
 
     iscsistart -N
-    iscsistart -b $iscsi_param </dev/null >>/tmp/iscsiroot.out 2>&1&
+    iscsistart -b $iscsi_param </dev/null >>/tmp/iscsiroot.out 2>&1 &
 
+    echo '! pidof iscsistart >/dev/null 2>&1' > /initqueue-finished/iscsistart_stopped.sh
     echo 'started' > "/tmp/iscsistarted-iscsi"
     echo 'started' > "/tmp/iscsistarted-firmware"
 
@@ -152,8 +153,10 @@ handle_netroot()
 	${iscsi_iface_name+--param iface.iscsi_ifacename=$iscsi_iface_name} \
 	${iscsi_netdev_name+--param iface.net_ifacename=$iscsi_netdev_name} \
 	${iscsi_param} \
-	|| :
+	&
 
+
+    echo '! pidof iscsistart >/dev/null 2>&1' > /initqueue-finished/iscsistart_stopped.sh
 
     netroot_enc=$(str_replace "$1" '/' '\2f')
     echo 'started' > "/tmp/iscsistarted-iscsi:${netroot_enc}"
@@ -173,7 +176,7 @@ if getarg netroot; then
 	handle_netroot ${nroot##iscsi:}
     done
 else
-    handle_netroot $iroot
+    [ -n "${iroot##iscsi}" ] && handle_netroot $iroot
 fi
 
 # now we have a root filesystem somewhere in /dev/sda*
