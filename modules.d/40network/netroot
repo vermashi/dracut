@@ -15,8 +15,6 @@ PATH=$PATH:/sbin:/usr/sbin
 # or root is already there
 [ -e /tmp/root.info ] || exit 1
 . /tmp/root.info
-[ -d $NEWROOT/proc ] && exit 0
-[ -z "$netroot" ] && exit 1
 
 # Let's see if we have to wait for other interfaces
 # Note: exit works just fine, since the last interface to be 
@@ -88,6 +86,9 @@ if [ -z "$dest" ] ; then
     esac
 fi
 [ -n "$dest" ] && arping -q -f -w 60 -I $netif $dest
+
+[ -d $NEWROOT/proc ] && exit 0
+[ -z "$netroot" ] && exit 1
 
 # Check: do we really know how to handle (net)root?
 [ -z "$root" ] && die "No or empty root= argument"
