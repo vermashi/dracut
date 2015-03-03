@@ -17,17 +17,26 @@ if [ -e /tmp/bridge.info ]; then
     . /tmp/bridge.info
 fi
 
+if [ -e /tmp/vlan.info ]; then
+    . /tmp/vlan.info
+fi
+
 mkdir -p /tmp/ifcfg/
 
 for netif in $IFACES ; do
     # bridge?
     unset bridge
     unset bond
+    unset vlan
+
     if [ "$netif" = "$bridgename" ]; then
         bridge=yes
     elif [ "$netif" = "$bondname" ]; then
     # $netif can't be bridge and bond at the same time
         bond=yes
+    fi
+    if [ "$netif" = "$vlanname" ]; then
+        vlan=yes
     fi
     cat /sys/class/net/$netif/address > /tmp/net.$netif.hwaddr
     {
@@ -50,12 +59,21 @@ for netif in $IFACES ; do
     } > /tmp/ifcfg/ifcfg-$netif
 
     # bridge needs different things written to ifcfg
-    if [ -z "$bridge" ] && [ -z "$bond" ]; then
+    if [ -z "$bridge" ] && [ -z "$bond" ] && [ -z "$vlan" ]; then
         # standard interface
         {
             echo "HWADDR=$(cat /sys/class/net/$netif/address)"
             echo "TYPE=Ethernet"
             echo "NAME=\"Boot Disk\""
+        } >> /tmp/ifcfg/ifcfg-$netif
+    fi
+
+    if [ -n "$vlan" ] ; then
+        {
+            echo "TYPE=Vlan"
+            echo "NAME=\"$netif\""
+            echo "VLAN=yes"
+            echo "PHYSDEV=\"$phydevice\""
         } >> /tmp/ifcfg/ifcfg-$netif
     fi
 
