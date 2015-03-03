@@ -91,7 +91,7 @@ Requires: nss
 %else
 Requires: nss-softokn
 %endif
-Requires: nss-softokn-freebl
+Requires: nss-softokn-freebl >= 3.14.3-22.el6_6
 
 %description fips
 This package requires everything which is needed to build an

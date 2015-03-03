@@ -12,12 +12,10 @@ fi
 
 if [ -e /usr/$libdir/libsoftokn3.so ]; then
     dracut_install \
-        /usr/$libdir/libsoftokn3.so /usr/$libdir/libsoftokn3.chk \
-        /usr/$libdir/libfreebl3.so /usr/$libdir/libfreebl3.chk 
+        /usr/$libdir/libsoftokn3.so /usr/$libdir/libsoftokn3.chk
 else
     dracut_install \
-        /$libdir/libsoftokn3.so /$libdir/libsoftokn3.chk \
-        /$libdir/libfreebl3.so /$libdir/libfreebl3.chk 
+        /$libdir/libsoftokn3.so /$libdir/libsoftokn3.chk
 fi
 
 for i in /{usr,}/$libdir/libssl.so* /{usr,}/$libdir/libcrypto.so* \
