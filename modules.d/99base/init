@@ -182,7 +182,6 @@ while :; do
     for job in /initqueue/*.sh; do
 	[ -e "$job" ] || break
         job=$job . $job
-        check_finished && break 2
     done
 
     $UDEV_QUEUE_EMPTY >/dev/null 2>&1 || continue
@@ -194,10 +193,11 @@ while :; do
     for job in /initqueue-settled/*.sh; do
         [ -e "$job" ] || break
         job=$job . $job
-        check_finished && break 2
     done
 
     $UDEV_QUEUE_EMPTY >/dev/null 2>&1 || continue
+
+    check_finished && break
 
     # no more udev jobs and queues empty.
     sleep 0.5
