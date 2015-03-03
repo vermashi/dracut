@@ -61,17 +61,6 @@ else
     rootok="1"
 fi
 
-# Check: do we really know how to handle (net)root?
-[ -z "$root" ] && die "No or empty root= argument"
-[ -z "$rootok" ] && die "Don't know how to handle 'root=$root'"
-
-handler=${netroot%%:*}
-handler=${handler%%4}
-handler="/sbin/${handler}root"
-if [ -z "$netroot" ] || [ ! -e "$handler" ] ; then
-    die "No handler for netroot type '$netroot'"
-fi
-
 # We're here, so we can assume that upping interfaces is now ok
 [ -z "$IFACES" ] && IFACES="$netif"
 
@@ -99,6 +88,17 @@ if [ -z "$dest" ] ; then
     esac
 fi
 [ -n "$dest" ] && arping -q -f -w 60 -I $netif $dest
+
+# Check: do we really know how to handle (net)root?
+[ -z "$root" ] && die "No or empty root= argument"
+[ -z "$rootok" ] && die "Don't know how to handle 'root=$root'"
+
+handler=${netroot%%:*}
+handler=${handler%%4}
+handler="/sbin/${handler}root"
+if [ -z "$netroot" ] || [ ! -e "$handler" ] ; then
+    die "No handler for netroot type '$netroot'"
+fi
 
 # Source netroot hooks before we start the handler
 source_all netroot
