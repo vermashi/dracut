@@ -289,6 +289,10 @@ test_setup() {
 	echo "'nbd-server' not found"
 	return 1
     fi
+    if ! modinfo nbd &>/dev/null; then
+        echo "Kernel module nbd missing"
+        return 1
+    fi
     make_encrypted_root || return 1
     make_client_root || return 1
     make_server_root || return 1
