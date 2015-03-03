@@ -34,7 +34,7 @@ fi
 
 # TODO: improve to support what cmdline does
 if [ -f /etc/crypttab ] && ! getargs rd_NO_CRYPTTAB; then
-    while read name dev luksfile rest; do
+    while read name dev luksfile rest || [ -n "$name" ] ; do
         # ignore blank lines and comments
         if [ -z "$name" -o "${name#\#}" != "$name" ]; then
             continue
