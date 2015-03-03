@@ -44,7 +44,7 @@ for netif in $IFACES ; do
         echo "DEVICE=$netif"
         echo "ONBOOT=yes"
         echo "NETBOOT=yes"
-        if [ -f /tmp/net.$netif.lease ]; then
+        if [ -f /tmp/dhclient.$netif.lease ]; then
             strstr "$ip" '*:*:*' && echo "DHCPV6C=yes"
             echo "BOOTPROTO=dhcp"
         else
