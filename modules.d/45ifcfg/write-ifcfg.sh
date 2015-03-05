@@ -47,8 +47,8 @@ for netif in $IFACES ; do
         if [ -f /tmp/dhclient.$netif.lease ]; then
             strstr "$ip" '*:*:*' && echo "DHCPV6C=yes"
             echo "BOOTPROTO=dhcp"
-	    [ -s /tmp/dhclient.$iface.lease ] &&    cp /tmp/dhclient.$iface.lease    /tmp/net.$iface.lease
-	    [ -s /tmp/dhclient.$iface.dhcpopts ] && cp /tmp/dhclient.$iface.dhcpopts /tmp/net.$iface.dhcpopts
+	    [ -f /tmp/dhclient.$netif.lease ] &&    cp /tmp/dhclient.$netif.lease    /tmp/net.$netif.lease
+	    [ -f /tmp/dhclient.$netif.dhcpopts ] && cp /tmp/dhclient.$netif.dhcpopts /tmp/net.$netif.dhcpopts
         else
             echo "BOOTPROTO=none"
         # If we've booted with static ip= lines, the override file is there
