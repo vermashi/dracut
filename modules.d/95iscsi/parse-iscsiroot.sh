@@ -53,12 +53,7 @@ if [ -n "$iscsiroot" ] ; then
     [ -z "$netroot" ] || [ "$netroot" = "iscsi" ] && netroot=iscsi:$iscsiroot
 fi
 
-modprobe -q -b qla4xxx
-modprobe -q -b cxgb3i
-modprobe -q -b cxgb4i
-modprobe -q -b bnx2i
-modprobe -q -b be2iscsi
-modprobe -q -b crc32c
+initqueue --onetime modprobe --all -q -b qla4xxx cxgb3i cxgb4i bnx2i be2iscsi crc32c
 
 # iscsi_firmware does not need argument checking
 if [ -n "$iscsi_firmware" ] ; then
