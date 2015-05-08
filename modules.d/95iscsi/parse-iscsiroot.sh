@@ -83,7 +83,10 @@ else
     # also call iscsiroot for misconfigured "ip=" or link down or MAC addr change
     # or replaced NIC
     # in the timeout queue
-    initqueue --onetime --timeout /sbin/iscsiroot dummy "$netroot" "$NEWROOT"
+    for nroot in $(getargs netroot); do
+        [ "${nroot%%:*}" = "iscsi" ] || continue
+        initqueue --onetime --timeout /sbin/iscsiroot dummy "$nroot" "$NEWROOT"
+    done
 fi
 
 netroot_enc=$(str_replace "$netroot" '/' '\2f')
