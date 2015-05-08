@@ -178,7 +178,7 @@ handle_netroot()
 # loop over all netroot parameter
 if getarg netroot; then
     for nroot in $(getargs netroot); do
-        [ "${netroot%%:*}" = "iscsi" ] || continue
+        [ "${nroot%%:*}" = "iscsi" ] || continue
 	handle_netroot ${nroot##iscsi:}
     done
 else
