@@ -32,3 +32,7 @@ fi
 for i in $(ls /{usr,}/$LIBDIR/libdevmapper-event-lvm*.so 2>/dev/null); do
     dracut_install $i
 done
+
+dracut_install -o thin_dump thin_restore thin_check thin_repair \
+               cache_dump cache_restore cache_check cache_repair \
+               era_check era_dump era_invalidate era_restore
