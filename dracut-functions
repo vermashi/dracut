@@ -441,7 +441,7 @@ dracut_install() {
     while (($# > 0)); do
 	if ! inst "$1" ; then
 	    if [[ $optional = yes ]]; then
-		dwarning "Skipping program $1 as it cannot be found and is flagged to be optional"
+		dinfo "Skipping program $1 as it cannot be found and is flagged to be optional"
 	    else
 		derror "Failed to install $1"
 		exit 1
