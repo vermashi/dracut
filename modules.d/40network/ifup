@@ -151,6 +151,7 @@ if [ -e /tmp/bond.info ]; then
 
     if [ "$netif" = "$bondname" ] && [ ! -e /tmp/net.$bondname.up ] ; then # We are master bond device
         modprobe bonding
+        echo "+$netif" >  /sys/class/net/bonding_masters
         ip link set $netif down
 
         # Stolen from ifup-eth
