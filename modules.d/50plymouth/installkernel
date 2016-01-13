@@ -3,3 +3,5 @@
 for modname in $(find "$srcmods/kernel/drivers/gpu/drm" -name '*.ko' 2>/dev/null); do
     grep -q drm_crtc_init  $modname && instmods $modname
 done
+
+hostonly='' instmods hyperv_fb
