@@ -4,14 +4,6 @@
 #	vlan=<vlanname>:<phydevice>
 #
 
-# return if vlan already parsed
-[ -n "$vlanname" ] && return
-
-# Check if vlan parameter is valid
-if getarg vlan= >/dev/null ; then
-    :
-fi
-
 parsevlan() {
     local v=${1}:
     set --
@@ -20,23 +12,21 @@ parsevlan() {
         v=${v#*:}
     done
 
-    unset vlanname phydevice
     case $# in
-    2)  vlanname=$1; phydevice=$2 ;;
+    2)  vlanname=$1; phydevice=$2 ; return 0 ;;
     *)  die "vlan= requires two parameters" ;;
     esac
+    return 1
 }
 
 unset vlanname phydevice
 
-if getarg vlan >/dev/null; then
-    # Read vlan= parameters if they exist
-    vlan="$(getarg vlan=)"
-    if [ ! "$vlan" = "vlan" ]; then
-        parsevlan "$(getarg vlan=)"
+for vlan in $(getargs vlan); do
+    [ "$vlan" = "vlan" ] && continue
+    unset vlanname phydevice
+    if parsevlan "$(getarg vlan=)"; then
+        echo "$phydevice" > /tmp/vlan.${phydevice}.phy
+        echo "$phydevice" >> /tmp/net.ifaces
+        echo "$vlanname" > /tmp/vlan.${vlanname}.${phydevice}
     fi
-
-    echo "vlanname=\"$vlanname\"" > /tmp/vlan.info
-    echo "phydevice=\"$phydevice\"" >> /tmp/vlan.info
-    return
-fi
+done

@@ -98,11 +98,40 @@ do_static() {
     /sbin/initqueue --onetime --name netroot-$netif  /sbin/netroot $netif 
 }
 
+get_vid() {
+    case "$1" in
+        vlan*)
+            return ${1#vlan}
+            ;;
+        *.*)
+            return ${1##*.}
+            ;;
+    esac
+}
+
 # Huh? No $1?
 [ -z "$1" ] && exit 1
 
 # $netif reads easier than $1
 netif=$1
+
+# check, if we need VLAN's for this interface
+if [ -z "$DO_VLAN_PHY" ] && [ -e /tmp/vlan.${netif}.phy ]; then
+    NO_AUTO_DHCP=yes DO_VLAN_PHY=yes ifup "$netif"
+    modprobe -b -q 8021q
+
+    for i in /tmp/vlan.*.${netif}; do
+        [ -e "$i" ] || continue
+        read vlanname < "$i"
+        if [ -n "$vlanname" ]; then
+	    ip link set "$phydevice" up
+	    wait_for_if_up "$phydevice"
+            ip link add dev "$vlanname" link "$phydevice" type vlan id "$(get_vid $vlanname)"
+            ifup "$vlanname"
+        fi
+    done
+    exit 0
+fi
 
 # enslave this interface to bond?
 if [ -e /tmp/bond.info ]; then
@@ -122,17 +151,6 @@ if [ -e /tmp/bridge.info ]; then
             : # We need to really setup bond (recursive call)
         else
             netif="$bridgename"
-        fi
-    fi
-fi
-
-if [ -e /tmp/vlan.info ]; then
-    . /tmp/vlan.info
-    if [ "$netif" = "$phydevice" ]; then
-        if [ "$netif" = "$bondname" ] && [ -n "$DO_BOND_SETUP" ] ; then
-            : # We need to really setup bond (recursive call)
-        else
-            netif="$vlanname"
         fi
     fi
 fi
@@ -217,28 +235,11 @@ if [ "$netif" = "$bridgename" ] && [ ! -e /tmp/net.$bridgename.up ]; then
     brctl addif $bridgename $ethname
 fi
 
-get_vid() {
-    case "$1" in
-        vlan*)
-            return ${1#vlan}
-            ;;
-        *.*)
-            return ${1##*.}
-            ;;
-    esac
-}
-
-if [ "$netif" = "$vlanname" ] && [ ! -e /tmp/net.$vlanname.up ]; then
-    modprobe 8021q
-    ip link set "$phydevice" up
-    wait_for_if_up "$phydevice"
-    ip link add dev "$vlanname" link "$phydevice" type vlan id "$(get_vid $vlanname; echo $?)"
-fi
 
 # No ip lines default to dhcp
 ip=$(getarg ip)
 
-if [ -z "$ip" ]; then
+if [ -z "$NO_AUTO_DHCP" ] && [ -z "$ip" ]; then
     if [ "$netroot" = "dhcp6" ]; then
 	do_dhcp -6
     else
@@ -280,7 +281,7 @@ for p in $(getargs ip=); do
 		do_dhcp -6 ;;
 	    auto6)
 		do_ipv6auto ;;
-            *) 
+            *)
 		do_static ;;
 	esac
     done
