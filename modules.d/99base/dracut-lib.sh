@@ -203,7 +203,21 @@ wait_for_if_up() {
     local cnt=0
     while [ $cnt -lt 100 ]; do 
 	li=$(ip link show $1)
-	[ -z "${li##*state UP*}" ] && return 0
+        if [ -n "$li" ]; then
+            case "$li" in
+                *\<UP*)
+                    return 0;;
+                *\<*,UP\>*)
+                    return 0;;
+                *\<*,UP,*\>*)
+                    return 0;;
+            esac
+        fi
+        if strstr "$li" "LOWER_UP" \
+                && strstr "$li" "state UNKNOWN" \
+                && ! strstr "$li" "DORMANT"; then
+            return 0
+        fi
 	sleep 0.1
 	cnt=$(($cnt+1))
     done 
