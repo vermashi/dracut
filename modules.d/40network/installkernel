@@ -19,3 +19,5 @@ instmods ipv6
 instmods 8021q
 # bonding
 instmods bonding
+# hyperv
+hostonly='' instmods hv_netvsc
