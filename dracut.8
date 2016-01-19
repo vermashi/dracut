@@ -329,6 +329,7 @@ specify nameserver(s) to use
 Setup vlan device named <vlanname> on <phydeivce>.
  We support the four styles of vlan names: VLAN_PLUS_VID (vlan0005), VLAN_PLUS_VID_NO_PAD (vlan5),
 DEV_PLUS_VID (eth0.0005), DEV_PLUS_VID_NO_PAD (eth0.5)
+This parameter can be specified multiple times.
 .TP
 .BR bridge= "<bridgename>:<ethnames>"
 Setup bridge <bridgename> with <ethnames>\&. <ethnames> is a comma\-separated list of physical (ethernet) interfaces\&. Bridge without parameters assumes bridge=br0:eth0
