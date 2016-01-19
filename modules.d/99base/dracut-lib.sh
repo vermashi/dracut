@@ -243,10 +243,21 @@ nfsroot_to_var() {
     fi
 }
 
+fix_bootif() {
+    local macaddr=${1}
+    local IFS='-'
+    macaddr=$(printf '%s:' ${macaddr})
+    macaddr=${macaddr%:}
+    # strip hardware type field from pxelinux
+    [ -n "${macaddr%??:??:??:??:??:??}" ] && macaddr=${macaddr#??:}
+    # return macaddr with lowercase alpha characters expected by udev
+    echo $macaddr | sed 'y/ABCDEF/abcdef/'
+}
+
 ip_to_var() {
     local v=${1}:
     local i
-    set -- 
+    set --
     while [ -n "$v" ]; do
 	if [ "${v#\[*:*:*\]:}" != "$v" ]; then
 	    # handle IPv6 address
@@ -254,19 +265,60 @@ ip_to_var() {
 	    i="${i##\[}"
 	    set -- "$@" "$i"
 	    v=${v#\[$i\]:}
-	else		    
+	else
 	    set -- "$@" "${v%%:*}"
 	    v=${v#*:}
 	fi
     done
 
-    unset ip srv gw mask hostname dev autoconf
+    unset ip srv gw mask hostname dev autoconf macaddr mtu dns1 dns2
     case $# in
-    0)	autoconf="error" ;;
-    1)	autoconf=$1 ;;
-    2)	dev=$1; autoconf=$2 ;;
-    *)	ip=$1; srv=$2; gw=$3; mask=$4; hostname=$5; dev=$6; autoconf=$7 ;;
+        0)  autoconf="error" ;;
+        1)  autoconf=$1 ;;
+        2)  [ -n "$1" ] && dev=$1; [ -n "$2" ] && autoconf=$2 ;;
+        3)  [ -n "$1" ] && dev=$1; [ -n "$2" ] && autoconf=$2; [ -n "$3" ] && mtu=$3 ;;
+        4)  [ -n "$1" ] && dev=$1; [ -n "$2" ] && autoconf=$2; [ -n "$3" ] && mtu=$3; [ -n "$4" ] && macaddr=$4 ;;
+        *)  [ -n "$1" ] && ip=$1; [ -n "$2" ] && srv=$2; [ -n "$3" ] && gw=$3; [ -n "$4" ] && mask=$4;
+            [ -n "$5" ] && hostname=$5; [ -n "$6" ] && dev=$6; [ -n "$7" ] && autoconf=$7;
+            case "$8" in
+                [0-9]*:*|[0-9]*.[0-9]*.[0-9]*.[0-9]*)
+                    dns1="$8"
+                    [ -n "$9" ] && dns2="$9"
+                    ;;
+                [0-9]*)
+                    mtu="$8"
+                    if [ -n "${9}" -a -n "${10}" -a -n "${11}" -a -n "${12}" -a -n "${13}" -a -n "${14}" ]; then
+                        macaddr="${9}:${10}:${11}:${12}:${13}:${14}"
+                    fi
+                    ;;
+                *)
+                    if [ -n "${9}" -a -n "${10}" -a -n "${11}" -a -n "${12}" -a -n "${13}" -a -n "${14}" ]; then
+                        macaddr="${9}:${10}:${11}:${12}:${13}:${14}"
+                    fi
+                    ;;
+            esac
+            ;;
     esac
+
+    # ip=<ipv4-address> means anaconda-style static config argument cluster:
+    # ip=<ip> gateway=<gw> netmask=<nm> hostname=<host> mtu=<mtu>
+    # ksdevice={link|bootif|ibft|<MAC>|<ifname>}
+    if strglob "$autoconf" "*.*.*.*"; then
+        ip="$autoconf"
+        gw=$(getarg gateway=)
+        mask=$(getarg netmask=)
+        hostname=$(getarg hostname=)
+        dev=$(getarg ksdevice=)
+        autoconf="none"
+        mtu=$(getarg mtu=)
+
+        # handle special values for ksdevice
+        case "$dev" in
+            bootif|BOOTIF) dev=$(fix_bootif $(getarg BOOTIF=)) ;;
+            link) dev="" ;; # FIXME: do something useful with this
+            ibft) dev="" ;; # ignore - ibft is handled elsewhere
+        esac
+    fi
 }
 
 killproc() {
