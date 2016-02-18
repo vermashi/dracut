@@ -22,6 +22,20 @@ str_replace() {
     echo "${out}${in}"
 }
 
+# returns OK if $1 matches (completely) glob pattern $2
+# An empty $1 will not be considered matched, even if $2 is * which technically
+# matches; as it would match anything, it's not an interesting case.
+strglob() {
+    [ -n "$1" -a -z "${1##$2}" ]
+}
+
+# returns OK if $1 contains (anywhere) a match of glob pattern $2
+# An empty $1 will not be considered matched, even if $2 is * which technically
+# matches; as it would match anything, it's not an interesting case.
+strglobin() {
+    [ -n "$1" -a -z "${1##*$2*}" ]
+}
+
 getarg() {
     set +x 
     local o line
