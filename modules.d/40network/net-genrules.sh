@@ -24,10 +24,10 @@ fix_bootif() {
         IFACES="$IFACES $ethname"
     fi
 
-    if [ -e /tmp/vlan.info ]; then
-        . /tmp/vlan.info
-        IFACES="$IFACES $phydevice"
-    fi
+    for i in /tmp/vlan.*.phy; do
+        [ -e "$i" ] || continue
+        IFACES="$IFACES $(cat "$i")"
+    done
 
     # bond: attempt only the defined interface (override bridge defines)
     if [ -e /tmp/bond.info ]; then
