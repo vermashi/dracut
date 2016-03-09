@@ -124,9 +124,9 @@ if [ -z "$DO_VLAN_PHY" ] && [ -e /tmp/vlan.${netif}.phy ]; then
         [ -e "$i" ] || continue
         read vlanname < "$i"
         if [ -n "$vlanname" ]; then
-	    ip link set "$phydevice" up
-	    wait_for_if_up "$phydevice"
-            ip link add dev "$vlanname" link "$phydevice" type vlan id "$(get_vid $vlanname)"
+            ip link set "$netif" up
+            wait_for_if_up "$netif"
+            ip link add dev "$vlanname" link "$netif" type vlan id "$(get_vid $vlanname)"
             ifup "$vlanname"
         fi
     done
