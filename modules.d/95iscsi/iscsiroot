@@ -36,24 +36,25 @@ iroot=${iroot#iscsi:}
 [ -e /sys/module/bnx2i ] && iscsiuio
 
 if getarg iscsi_firmware && ! [ -f /tmp/iscsistarted-firmware ]; then
-    if [ -n "${root%%block:*}" ]; then
-        # if root is not specified try to mount the whole iSCSI LUN
-        printf 'ENV{DEVTYPE}!="partition", SYMLINK=="disk/by-path/*-iscsi-*-*", SYMLINK+="root"\n' >> /etc/udev/rules.d/99-iscsi-root.rules
-    fi
-
     for p in $(getargs iscsi_param); do
         iscsi_param="$iscsi_param --param $p"
     done
 
-    iscsistart -N
-    iscsistart -b $iscsi_param </dev/null >>/tmp/iscsiroot.out 2>&1 &
+    if iscsistart -N; then
+        if [ -n "${root%%block:*}" ]; then
+            # if root is not specified try to mount the whole iSCSI LUN
+            printf 'ENV{DEVTYPE}!="partition", SYMLINK=="disk/by-path/*-iscsi-*-*", SYMLINK+="root"\n' >> /etc/udev/rules.d/99-iscsi-root.rules
+        fi
 
-    echo '! pidof iscsistart >/dev/null 2>&1' > /initqueue-finished/iscsistart_stopped.sh
-    echo 'started' > "/tmp/iscsistarted-iscsi"
-    echo 'started' > "/tmp/iscsistarted-firmware"
+        iscsistart -b $iscsi_param </dev/null >>/tmp/iscsiroot.out 2>&1 &
+
+        echo '! pidof iscsistart >/dev/null 2>&1' > /initqueue-finished/iscsistart_stopped.sh
+        echo 'started' > "/tmp/iscsistarted-iscsi"
+        echo 'started' > "/tmp/iscsistarted-firmware"
+    fi
 
     exit 0
-fi
+if
 
 handle_netroot()
 {
