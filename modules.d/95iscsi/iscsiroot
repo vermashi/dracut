@@ -54,7 +54,7 @@ if getarg iscsi_firmware && ! [ -f /tmp/iscsistarted-firmware ]; then
     fi
 
     exit 0
-if
+fi
 
 handle_netroot()
 {
