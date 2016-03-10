@@ -15,8 +15,8 @@ Name: dracut
 Version: 004
 Release: 1%{?dist}
 Summary: Initramfs generator using udev
-Group: System Environment/Base		
-License: GPLv2+	
+Group: System Environment/Base
+License: GPLv2+
 URL: http://apps.sourceforge.net/trac/dracut/wiki
 
 Source0: http://www.kernel.org/pub/linux/utils/boot/dracut/dracut-%{version}.tar.bz2
@@ -69,7 +69,7 @@ dracut is a new, event-driven initramfs infrastructure based around udev.
 %package network
 Summary: Dracut modules to build a dracut initramfs with network support
 Requires: %{name} = %{version}-%{release}
-Requires: dhclient rpcbind nfs-utils 
+Requires: dhclient rpcbind nfs-utils
 Requires: iscsi-initiator-utils
 %if %{with_nbd}
 Requires: nbd
@@ -103,7 +103,7 @@ Requires: %{name}-fips = %{version}-%{release}
 
 %description fips-aesni
 This package requires everything which is needed to build an
-all purpose initramfs with dracut, which does an integrity check 
+all purpose initramfs with dracut, which does an integrity check
 and adds the aesni-intel kernel module.
 
 %package caps
@@ -273,7 +273,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc COPYING
 %{_datadir}/dracut/modules.d/02caps
 
-%files kernel 
+%files kernel
 %defattr(-,root,root,0755)
 %doc README.kernel
 
@@ -281,7 +281,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,0755)
 %doc README.generic
 
-%files tools 
+%files tools
 %defattr(-,root,root,0755)
 %doc COPYING NEWS
 %{_mandir}/man8/dracut-gencmdline.8*
@@ -291,5 +291,5 @@ rm -rf $RPM_BUILD_ROOT
 %dir /boot/dracut
 %dir /var/lib/dracut
 %dir /var/lib/dracut/overlay
- 
+
 %changelog
