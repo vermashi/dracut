@@ -1,3 +1,6 @@
 #!/bin/bash
-hostonly="" instmods dm_crypt cbc sha256 xts aes aes_generic aesni-intel aes-x86_64 fpu drbg
+hostonly="" instmods \
+        dm_crypt cbc sha256 xts aes aes_generic aesni-intel aes-x86_64 fpu \
+        drbg ecb ctr
 
+instmods =crypto
