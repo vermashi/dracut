@@ -48,6 +48,12 @@ if getarg iscsi_firmware && ! [ -f /tmp/iscsistarted-firmware-ok ]; then
     # start it in the background and wait for it in initqueue-finished
     (
         echo "[ -f \"/tmp/iscsistarted-iscsi-$$\" ]" > /initqueue-finished/iscsistarted-iscsi-$$.sh
+        # serialize iscsistart -b jobs
+        while [ -f /tmp/iscsistart-inprogress ]; do
+                sleep 0.2
+        done
+        echo "starting $$" > "/tmp/iscsistart-inprogress"
+
         iscsistart -N
         if iscsistart -b $iscsi_param </dev/null >>/tmp/iscsiroot.out 2>&1; then
             echo 'started' > "/tmp/iscsistarted-firmware-ok"
@@ -55,6 +61,7 @@ if getarg iscsi_firmware && ! [ -f /tmp/iscsistarted-firmware-ok ]; then
         echo 'started' > "/tmp/iscsistarted-firmware"
         echo 'started' > "/tmp/iscsistarted-iscsi-$$"
         echo 'started' > "/tmp/iscsistarted-iscsi"
+        rm -f /tmp/iscsistart-inprogress
     ) &
 
     exit 0
