@@ -41,7 +41,7 @@ elif [ "$netdriver" = "bnx2x" ] || getarg 'autovlan=yes'; then
     modprobe 8021q
     udevadm settle --timeout=30 >/dev/null 2>&1
     # Sleep for 3 s to allow dcb negotiation
-    sleep 3
+    sleep 13
     fipvlan "$netif" -c -s --link-retry=100 -f "-fcoe"
 else
     echo -n "$netif" > /sys/module/fcoe/parameters/create
