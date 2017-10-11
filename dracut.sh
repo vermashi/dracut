@@ -1704,8 +1704,8 @@ else
     exit 1
 fi
 
-sync $outfile 2> /dev/null
-if [ $? -ne 0 ] ; then
+
+if ! sync "$outfile" 2> /dev/null; then
     dinfo "dracut: sync operartion on newly created initramfs $outfile failed"
     exit 1
 fi
