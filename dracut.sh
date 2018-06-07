@@ -23,6 +23,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+unset BASH_ENV
+
 # store for logging
 dracut_args=( "$@" )
 
