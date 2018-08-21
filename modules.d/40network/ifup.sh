@@ -377,10 +377,13 @@ for p in $(getargs ip=); do
     esac
 
     # If this option isn't directed at our interface, skip it
-    [ -n "$dev" ] && [ "$dev" != "$netif" ] && \
-    [ "$use_bridge" != 'true' ] && \
-    [ "$use_vlan" != 'true' ] && continue
-
+    if [ -n "$dev" ]; then
+        [ "$dev" != "$netif" ] && \
+        [ "$use_bridge" != 'true' ] && \
+        [ "$use_vlan" != 'true' ] && continue
+    else
+        iface_is_enslaved "$netif" && continue
+    fi
     # Store config for later use
     for i in ip srv gw mask hostname macaddr mtu dns1 dns2; do
         eval '[ "$'$i'" ] && echo '$i'="$'$i'"'
