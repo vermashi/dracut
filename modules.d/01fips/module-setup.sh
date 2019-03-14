@@ -11,7 +11,7 @@ depends() {
 }
 
 installkernel() {
-    local _fipsmodules _mod i
+    local _fipsmodules _mod i _bootfstype
 
     if [[ -f "${srcmods}/modules.fips" ]]; then
         _fipsmodules="$(cat "${srcmods}/modules.fips")"
@@ -36,6 +36,16 @@ installkernel() {
             done
         fi
     done
+
+    # with hostonly_default_device fs module for /boot is not installed by default
+    if [[ $hostonly ]] && [[ "$hostonly_default_device" == "no" ]]; then
+        _bootfstype=$(find_mp_fstype /boot)
+        if [[ -n "$_bootfstype" ]]; then
+            hostonly='' instmods $_bootfstype
+        else
+            dwarning "Can't determine fs type for /boot, FIPS check may fail."
+        fi
+    fi
 }
 
 install() {
