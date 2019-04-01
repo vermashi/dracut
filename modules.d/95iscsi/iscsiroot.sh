@@ -197,6 +197,11 @@ handle_netroot()
 	                    ${iscsi_netdev_name:+--param "iface.net_ifacename=$iscsi_netdev_name"} \
                             ${iscsi_param} >/dev/null 2>&1 \
 	            && { > $hookdir/initqueue/work ; }
+                while : ; do
+                    status=$(systemctl is-active "$netroot_enc" 2>/dev/null)
+                    [ "$status" != "activating" ] && break
+                    sleep 1
+                done
             else
                 systemctl --no-block restart "$netroot_enc" >/dev/null 2>&1 \
 	            && { > $hookdir/initqueue/work ; }
