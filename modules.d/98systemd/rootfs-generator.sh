@@ -32,7 +32,6 @@ generator_wait_for_dev()
         {
             echo "[Unit]"
             echo "JobTimeoutSec=$_timeout"
-            echo "JobRunningTimeoutSec=$_timeout"
         } > "$GENERATOR_DIR"/${_name}.device.d/timeout.conf
     fi
 }
