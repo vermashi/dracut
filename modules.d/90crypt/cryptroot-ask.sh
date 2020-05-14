@@ -23,9 +23,10 @@ luksname=$2
 # number of tries
 numtries=${3:-10}
 
+luksoptions=$(getargs rd.luks.options)
 # TODO: improve to support what cmdline does
 if [ -f /etc/crypttab ] && getargbool 1 rd.luks.crypttab -d -n rd_NO_CRYPTTAB; then
-    while read name dev luksfile luksoptions || [ -n "$name" ]; do
+    while read name dev luksfile options || [ -n "$name" ]; do
         # ignore blank lines and comments
         if [ -z "$name" -o "${name#\#}" != "$name" ]; then
             continue
@@ -35,6 +36,7 @@ if [ -f /etc/crypttab ] && getargbool 1 rd.luks.crypttab -d -n rd_NO_CRYPTTAB; t
         if [ "${dev%%=*}" = "PARTUUID" ]; then
             if [ "luks-${dev##PARTUUID=}" = "$luksname" ]; then
                 luksname="$name"
+                luksoptions="$options"
                 break
             fi
 
@@ -42,6 +44,7 @@ if [ -f /etc/crypttab ] && getargbool 1 rd.luks.crypttab -d -n rd_NO_CRYPTTAB; t
         elif [ "${dev%%=*}" = "UUID" ]; then
             if [ "luks-${dev##UUID=}" = "$luksname" ]; then
                 luksname="$name"
+                luksoptions="$options"
                 break
             fi
 
@@ -49,6 +52,7 @@ if [ -f /etc/crypttab ] && getargbool 1 rd.luks.crypttab -d -n rd_NO_CRYPTTAB; t
         elif [ "${dev%%=*}" = "ID" ]; then
             if [ "luks-${dev##ID=}" = "$luksname" ]; then
                 luksname="$name"
+                luksoptions="$options"
                 break
             fi
 
@@ -58,6 +62,7 @@ if [ -f /etc/crypttab ] && getargbool 1 rd.luks.crypttab -d -n rd_NO_CRYPTTAB; t
             mdev=$(readlink -f $device)
             if [ "$cdev" = "$mdev" ]; then
                 luksname="$name"
+                luksoptions="$options"
                 break
             fi
         fi
